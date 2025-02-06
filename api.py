@@ -3,7 +3,7 @@ import time, os, dotenv
 dotenv.load_dotenv()
 
 
-def create_object():
+def test_create_object():
    payload = {
       "name": "Apple MacBook Pro 16",
       "data": {
@@ -14,15 +14,18 @@ def create_object():
       }
    }
    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-   print(f"responce: {responce}")
+   # print(f"responce: {responce}")
+   assert responce['name'] == payload['name']
 
 
-def get_object():
-   responce = requests.get('https://api.restful-api.dev/objects/ff808181932badb60194dcbba7995d3a').json()
-   print(f"responce: {responce}")
+def test_get_object():
+   obj_id = 'ff808181932badb60194dcbba7995d3a'
+   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
+   # print(f"responce: {responce}")
+   assert responce['id'] == obj_id
 
 
-def update_object():
+def test_update_object():
    payload = {
          "name": "Apple MacBook Pro 16",
          "data": {
@@ -32,10 +35,18 @@ def update_object():
             "Hard disk size": "1 TB"
          }
       }
-   responce = requests.put('https://api.restful-api.dev/objects/ff808181932badb60194dcbba7995d3a', json=payload).json()
-   print(f"responce: {responce}")
+   responce = requests.put(
+      'https://api.restful-api.dev/objects/ff808181932badb60194dcbba7995d3a',
+      json=payload
+   ).json()
+   # print(f"responce: {responce}")
+   assert responce['name'] == payload['name']
 
 
-def delete_object():
-   responce = requests.delete('https://api.restful-api.dev/objects/ff808181932badb60194dcbba7995d3a').json()
-   print(f"responce: {responce}")
+def test_delete_object():
+   obj_id = 'ff808181932badb60194dcbba7995d3a'
+   responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
+   # print(f"responce: {responce}")
+   assert responce.status_code == 200
+   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
+   assert responce.status_code == 404
