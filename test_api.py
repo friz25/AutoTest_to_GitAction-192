@@ -1,3 +1,6 @@
+#====189 API===================== ГОТОВО
+# https://restful-api.dev/
+#====//189 API=====================
 import requests
 import pytest
 import time, os, dotenv, logging
@@ -87,7 +90,8 @@ logger_loguru.add(
 # endregion
 
 @logger_loguru.catch
-def create_object():
+@pytest.fixture()
+def obj_id():
    payload = {
       "name": "Apple MacBook Pro 16",
       "data": {
@@ -98,7 +102,8 @@ def create_object():
       }
    }
    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-   return responce['id']
+   yield responce['id']
+   requests.delete(f'https://api.restful-api.dev/objects/{responce["id"]}')
 
 @logger_loguru.catch
 def test_create_object():
@@ -116,15 +121,14 @@ def test_create_object():
    assert responce['name'] == payload['name']
 
 @logger_loguru.catch
-def test_get_object():
-   obj_id = create_object()
+def test_get_object(obj_id):
+   # print(obj_id) #ручной тест (что обьект (после yield) реал удаляеться)
    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
    # print(f"responce: {responce}")
    assert responce['id'] == obj_id
 
 @logger_loguru.catch
-def test_update_object():
-   obj_id = create_object()
+def test_update_object(obj_id):
    payload = {
          "name": "Apple MacBook Pro 16",
          "data": {
@@ -142,8 +146,7 @@ def test_update_object():
    assert responce['name'] == payload['name']
 
 @logger_loguru.catch
-def test_delete_object():
-   obj_id = create_object()
+def test_delete_object(obj_id):
    responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
    # print(f"responce: {responce}")
    assert responce.status_code == 200
