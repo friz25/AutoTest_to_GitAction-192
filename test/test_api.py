@@ -183,6 +183,9 @@ logger_loguru.add(
 # endregion
 # https://magento.softwaretestingboard.com/
 
+from pages.homepage import HomePage
+from pages.product import ProductPage
+
 # region === 192 ОСНОВНОЙ в GitActions / тестим сайт DemoBLAZE ======
 
 # region Первая часть теста
@@ -204,51 +207,21 @@ logger_loguru.add(
 #     assert 2 == 3
 
 # endregion
-
 # region 2я часть теста
-import pytest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-
-@pytest.fixture()
-def browser():
-   browser = webdriver.Chrome()
-   browser.maximize_window()
-   browser.implicitly_wait(5)
-   yield browser
 
 def test_open_s6(browser):
-   """Тестим что внутри товара "Samsung galaxy s6"
-    есть заголовок "Samsung galaxy s6" """
-   browser.get('https://demoblaze.com/index.html')
-
-   # time.sleep(5)
-   galaxy_s6 = browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
-   galaxy_s6.click()
-   # time.sleep(5)
-   title = browser.find_element(By.CSS_SELECTOR, 'h2')
-   assert title.text == 'Samsung galaxy s6'
-
-   browser.close()
-   browser.quit()
+   homepage = HomePage(browser)
+   homepage.open()
+   homepage.click_galaxy_s6()
+   product_page = ProductPage(browser)
+   product_page.check_title_is('Samsung galaxy s6')
 
 def test_two_monitors(browser):
-   """Тестим что мониторов (в категории "Мониторы") = 2 штуки """
-   browser.get('https://demoblaze.com/index.html')
-   monitor_link = browser.find_element(By.CSS_SELECTOR, '''[onclick="byCat('monitor')"]''')
-   monitor_link.click()
+   homepage = HomePage(browser)
+   homepage.open()
+   homepage.click_monitor()
    time.sleep(5)
-   monitors = browser.find_elements(By.CSS_SELECTOR, '.card')
-   assert len(monitors) == 2
-
-
-
-
-
-
-
-
-
+   homepage.check_that_products_count(2)
 
 
 # endregion
