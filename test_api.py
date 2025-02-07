@@ -70,7 +70,7 @@ dotenv.load_dotenv()
 
 logger_loguru.add(
    "logs/loguru.log", format='{time} {level} {message}',
-   level='INFO', rotation='10 KB', compression='zip'
+   level='ERROR', rotation='10 MB', compression='zip'
 )
 # *можно указать serialize=True и логфайл будет в формате .json
 
@@ -89,6 +89,7 @@ logger_loguru.add(
 
 # endregion
 
+# region === 189 API ===
 @logger_loguru.catch
 @pytest.fixture()
 def obj_id():
@@ -152,3 +153,33 @@ def test_delete_object(obj_id):
    assert responce.status_code == 200
    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
    assert responce.status_code == 404
+
+# endregion
+# https://restful-api.dev/
+
+# region ====190 системные перем / тестим сайт MAGENTO =====
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+# @logger_loguru.catch
+def test_login():
+   login = os.getenv('MY_LOGIN')
+   password = os.getenv('MY_PASS')
+   # driver = webdriver.Firefox() #не работает (нет Firefox драйвера видимо)
+   driver = webdriver.Firefox()
+   # driver = webdriver.Chrome()
+
+   driver.maximize_window()
+   driver.get('https://magento.softwaretestingboard.com/customer/account/login/')
+   login_field = driver.find_element(By.CSS_SELECTOR, '#email')
+   pass_field = driver.find_element(By.CSS_SELECTOR, '#pass')
+   login_field.send_keys(login)
+   pass_field.send_keys(password)
+   time.sleep(2)
+
+   driver.close()
+   driver.quit()
+
+# endregion
+# https://magento.softwaretestingboard.com/
+

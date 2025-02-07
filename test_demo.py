@@ -14,14 +14,12 @@ def test_demo2():
 # https://restful-api.dev/
 #====//189 API=====================
 
-#====190 системные перем / тестим сайт MAGENTO =====
+#====190 системные перем / тестим сайт MAGENTO ===== ГОТОВО
 # https://magento.softwaretestingboard.com/
-
 #====//190 системные перем / тестим сайт MAGENTO =====
 
-#====191 dotenv =====================
+#====191 dotenv ===================== ???
 # https://magento.softwaretestingboard.com/
-
 #====//191 dotenv =====================
 
 #====192 ОСНОВНОЙ в GitActions =====================
