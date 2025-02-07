@@ -44,12 +44,12 @@ dotenv.load_dotenv()
 
 # endregion
 # region === ЛОГ / СПОСОБ 3 (через pip LOGURU) ====
-# from loguru import logger as logger_loguru
+from loguru import logger as logger_loguru
 
-# logger_loguru.add(
-#    "logs/loguru.log", format='{time} {level} {message}',
-#    level='INFO', rotation='10 KB', compression='zip'
-# )# *можно указать serialize=True и логфайл будет в формате .json
+logger_loguru.add(
+   "logs/loguru.log", format='{time} {level} {message}',
+   level='INFO', rotation='10 KB', compression='zip',
+)# *можно указать serialize=True и логфайл будет в формате .json
 
 # logger_loguru.info('Давай протестируем файл на данные?')
 
@@ -90,96 +90,181 @@ logger_loguru.add(
 # endregion
 
 # region === 189 API ===
-@logger_loguru.catch
-@pytest.fixture()
-def obj_id():
-   payload = {
-      "name": "Apple MacBook Pro 16",
-      "data": {
-         "year": os.getenv('POST_PARAM1'),
-         "price": os.getenv('POST_PARAM2'),
-         "CPU model": "Intel Core i9",
-         "Hard disk size": "1 TB"
-      }
-   }
-   responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-   yield responce['id']
-   requests.delete(f'https://api.restful-api.dev/objects/{responce["id"]}')
-
-@logger_loguru.catch
-def test_create_object():
-   payload = {
-      "name": "Apple MacBook Pro 16",
-      "data": {
-         "year": os.getenv('POST_PARAM1'),
-         "price": os.getenv('POST_PARAM2'),
-         "CPU model": "Intel Core i9",
-         "Hard disk size": "1 TB"
-      }
-   }
-   responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-   # print(f"responce: {responce}")
-   assert responce['name'] == payload['name']
-
-@logger_loguru.catch
-def test_get_object(obj_id):
-   # print(obj_id) #ручной тест (что обьект (после yield) реал удаляеться)
-   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
-   # print(f"responce: {responce}")
-   assert responce['id'] == obj_id
-
-@logger_loguru.catch
-def test_update_object(obj_id):
-   payload = {
-         "name": "Apple MacBook Pro 16",
-         "data": {
-            "year": os.getenv('PUT_PARAM1'),
-            "price": os.getenv('PUT_PARAM2'),
-            "CPU model": "Intel Core i9",
-            "Hard disk size": "1 TB"
-         }
-      }
-   responce = requests.put(
-      f'https://api.restful-api.dev/objects/{obj_id}',
-      json=payload
-   ).json()
-   # print(f"responce: {responce}")
-   assert responce['name'] == payload['name']
-
-@logger_loguru.catch
-def test_delete_object(obj_id):
-   responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
-   # print(f"responce: {responce}")
-   assert responce.status_code == 200
-   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
-   assert responce.status_code == 404
+# @logger_loguru.catch
+# @pytest.fixture()
+# def obj_id():
+#    payload = {
+#       "name": "Apple MacBook Pro 16",
+#       "data": {
+#          "year": os.getenv('POST_PARAM1'),
+#          "price": os.getenv('POST_PARAM2'),
+#          "CPU model": "Intel Core i9",
+#          "Hard disk size": "1 TB"
+#       }
+#    }
+#    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
+#    yield responce['id']
+#    requests.delete(f'https://api.restful-api.dev/objects/{responce["id"]}')
+#
+# @logger_loguru.catch
+# def test_create_object():
+#    payload = {
+#       "name": "Apple MacBook Pro 16",
+#       "data": {
+#          "year": os.getenv('POST_PARAM1'),
+#          "price": os.getenv('POST_PARAM2'),
+#          "CPU model": "Intel Core i9",
+#          "Hard disk size": "1 TB"
+#       }
+#    }
+#    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
+#    # print(f"responce: {responce}")
+#    assert responce['name'] == payload['name']
+#
+# @logger_loguru.catch
+# def test_get_object(obj_id):
+#    # print(obj_id) #ручной тест (что обьект (после yield) реал удаляеться)
+#    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
+#    # print(f"responce: {responce}")
+#    assert responce['id'] == obj_id
+#
+# @logger_loguru.catch
+# def test_update_object(obj_id):
+#    payload = {
+#          "name": "Apple MacBook Pro 16",
+#          "data": {
+#             "year": os.getenv('PUT_PARAM1'),
+#             "price": os.getenv('PUT_PARAM2'),
+#             "CPU model": "Intel Core i9",
+#             "Hard disk size": "1 TB"
+#          }
+#       }
+#    responce = requests.put(
+#       f'https://api.restful-api.dev/objects/{obj_id}',
+#       json=payload
+#    ).json()
+#    # print(f"responce: {responce}")
+#    assert responce['name'] == payload['name']
+#
+# @logger_loguru.catch
+# def test_delete_object(obj_id):
+#    responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
+#    # print(f"responce: {responce}")
+#    assert responce.status_code == 200
+#    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
+#    assert responce.status_code == 404
 
 # endregion
 # https://restful-api.dev/
 
-# region ====190 системные перем / тестим сайт MAGENTO =====
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-
-# @logger_loguru.catch
-def test_login():
-   login = os.getenv('MY_LOGIN')
-   password = os.getenv('MY_PASS')
-   # driver = webdriver.Firefox() #не работает (нет Firefox драйвера видимо)
-   driver = webdriver.Firefox()
-   # driver = webdriver.Chrome()
-
-   driver.maximize_window()
-   driver.get('https://magento.softwaretestingboard.com/customer/account/login/')
-   login_field = driver.find_element(By.CSS_SELECTOR, '#email')
-   pass_field = driver.find_element(By.CSS_SELECTOR, '#pass')
-   login_field.send_keys(login)
-   pass_field.send_keys(password)
-   time.sleep(2)
-
-   driver.close()
-   driver.quit()
+# region ====190/191 системные перем + dotenv / тестим сайт MAGENTO =====
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+#
+# # @logger_loguru.catch
+# def test_login():
+#    login = os.getenv('MY_LOGIN')
+#    password = os.getenv('MY_PASS')
+#    # driver = webdriver.Firefox() #не работает (нет Firefox драйвера видимо)
+#    # driver = webdriver.Firefox()
+#    driver = webdriver.Chrome()
+#
+#    driver.maximize_window()
+#    driver.get('https://magento.softwaretestingboard.com/customer/account/login/')
+#    login_field = driver.find_element(By.CSS_SELECTOR, '#email')
+#    pass_field = driver.find_element(By.CSS_SELECTOR, '#pass')
+#    login_field.send_keys(login)
+#    pass_field.send_keys(password)
+#    time.sleep(2)
+#
+#    driver.close()
+#    driver.quit()
 
 # endregion
 # https://magento.softwaretestingboard.com/
+
+# region === 192 ОСНОВНОЙ в GitActions / тестим сайт DemoBLAZE ======
+
+# region Первая часть теста
+
+# import pytest
+
+# @pytest.fixture()
+# def before_after():
+#     # print('\nBefore test')
+#     logger_loguru.info('Before test')
+#     yield
+#     # print('\nAfter test')
+#     logger_loguru.info('After test')
+#
+# def test_demo1():
+#    assert 1 == 1
+#
+# def test_demo2(before_after):
+#     assert 2 == 3
+
+# endregion
+
+# region 2я часть теста
+import pytest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+@pytest.fixture()
+def browser():
+   browser = webdriver.Chrome()
+   browser.maximize_window()
+   browser.implicitly_wait(5)
+   yield browser
+
+def test_open_s6(browser):
+   """Тестим что внутри товара "Samsung galaxy s6"
+    есть заголовок "Samsung galaxy s6" """
+   browser.get('https://demoblaze.com/index.html')
+
+   # time.sleep(5)
+   galaxy_s6 = browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
+   galaxy_s6.click()
+   # time.sleep(5)
+   title = browser.find_element(By.CSS_SELECTOR, 'h2')
+   assert title.text == 'Samsung galaxy s6'
+
+   browser.close()
+   browser.quit()
+
+def test_two_monitors(browser):
+   """Тестим что мониторов (в категории "Мониторы") = 2 штуки """
+   browser.get('https://demoblaze.com/index.html')
+   monitor_link = browser.find_element(By.CSS_SELECTOR, '''[onclick="byCat('monitor')"]''')
+   monitor_link.click()
+   time.sleep(5)
+   monitors = browser.find_elements(By.CSS_SELECTOR, '.card')
+   assert len(monitors) == 2
+
+
+
+
+
+
+
+
+
+
+
+# endregion
+
+# endregion
+# https://demoblaze.com/
+
+#====193 Создание POM проекта / тестим QA-PRACTICE.COM =======
+# qa-practice.com
+
+#====194 ALLURE / тоже QA-PRACTICE.COM======
+# qa-practice.com
+
+#====195 ALLURE в GitActions========
+
+#====199 Оповещение в SCLAK и TELEGRAM========
+
+
 
