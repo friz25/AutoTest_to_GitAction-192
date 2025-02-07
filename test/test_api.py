@@ -210,7 +210,7 @@ from pages.product import ProductPage
 # region 2я часть теста
 
 def test_open_s6(browser):
-   """no homo"""
+   """"""
    homepage = HomePage(browser)
    homepage.open()
    homepage.click_galaxy_s6()
