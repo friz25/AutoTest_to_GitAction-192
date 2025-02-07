@@ -13,7 +13,7 @@ on:
   push:
     branches: [master]
   pull_request: 
-    branches: [main, test]
+    branches: [main, master, test]
     
 
 jobs:
