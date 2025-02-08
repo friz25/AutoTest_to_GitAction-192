@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # установим Python 3.10 / Chrome (для тестов/Selenium) /
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: setup Python
@@ -33,21 +34,27 @@ jobs:
           python-version: "3.10"
       - name: Install Chrome
         run: sudo apt-get install google-chrome-stable
+      # установим зависимости / пакеты (из списка requirements.txt)
       - name: install dependencies
         run: pip install -r requirements.txt
+      # Диплоим Тест1
       - name: first_test
         if: "github.event.inputs.deployment_target == 'first_test'"
         run: pytest tests/test_button.py::test_button_exist --alluredir=allure-results
         continue-on-error: true
+      # Диплоим Тест2
       - name: second_test
         if: "github.event.inputs.deployment_target == 'second_test'"
         run: pytest tests/test_button.py::test_button_exist_2 --alluredir=allure-results
         continue-on-error: true
+      # Диплоим ВСЕ ТЕСТЫ
       - name: all
         if: "github.event.inputs.deployment_target == 'all'"
         run: pytest --alluredir=allure-results
         continue-on-error: true
+      # Сохраняем Рез в файл
       - run: sudo apt install zip && zip -r allure-results.zip allure-results
+        d
       - name: upload results
         run: >
           UUID=$(curl -X "POST" "http://${{ secrets.SERVER }}/api/result"
@@ -61,10 +68,11 @@ jobs:
           -H 'accept: */*'
           -H 'Content-Type: application/json'
           -d "{\"reportSpec\":{\"path\":[\"pathstring\"],\"executorInfo\":{\"name\":\"GitHub\",\"type\":\"exectype\",\"url\":\"https://github.com/senior-tester/run-tests-demo/actions/workflows/server.yml\",\"buildOrder\":0,\"buildName\":\"$GITHUB_RUN_NUMBER\",\"buildUrl\":\"https://github.com/senior-tester/run-tests-demo/actions/runs/$GITHUB_RUN_ID\",\"reportName\":\"my_report_name\",\"reportUrl\":\"my_report_url\"}},\"results\":[\"$UUID\"],\"deleteResults\":true}"
+      # Сохраняем в файл (чтоб передать в allure)
       - name: Store allure results
         uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path:
             allure-results
-          retention-days: 1
+          retention-days: 1 # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
