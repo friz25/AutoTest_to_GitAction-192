@@ -207,15 +207,11 @@ from pages.product import ProductPage
 def test_open_s6(browser):
    """Тестим что внутри товара "Samsung galaxy s6"
     есть заголовок "Samsung galaxy s6" """
-   with allure.step('Открыли Главную страницу'):
-      homepage = HomePage(browser)
-      homepage.open()
-   with allure.step('Кликнули по "Samsung galaxy s6"'):
-      homepage.click_galaxy_s6()
-   with allure.step('Открыли страницу товара'):
-      product_page = ProductPage(browser)
-   with allure.step('Убедились что там (действительно) "Samsung galaxy s6"'):
-      product_page.check_title_is('Samsung galaxy s6')
+   homepage = HomePage(browser)
+   homepage.open()
+   homepage.click_galaxy_s6()
+   product_page = ProductPage(browser)
+   product_page.check_title_is('Samsung galaxy s6')
 
 # region === OldVer (До POM структуры)
 
@@ -234,15 +230,12 @@ def test_open_s6(browser):
 def test_two_monitors(browser):
    """Тестим что внутри категории "Monitors"
        есть именно 2 обьекта/монитора """
-   with allure.step('Открыли Главную страницу'):
-      homepage = HomePage(browser)
-      homepage.open()
-   with allure.step('Кликнули на категорию товаров "Monitors"'):
-      homepage.click_monitor()
+   homepage = HomePage(browser)
+   homepage.open()
+   homepage.click_monitor()
    with allure.step('*Выждали 5 секунд (чтоб браузер прогрузился полностью)'):
       time.sleep(5)
-   with allure.step('Убедились что там именно 2 товара/монитора'):
-      homepage.check_that_products_count(2)
+   homepage.check_that_products_count(2)
 
 # region === OldVer (До POM структуры)
 
