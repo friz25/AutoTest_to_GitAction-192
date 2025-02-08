@@ -210,20 +210,45 @@ from pages.product import ProductPage
 # region 2я часть теста
 
 def test_open_s6(browser):
-   """"""
+   """Тестим что внутри товара "Samsung galaxy s6"
+    есть заголовок "Samsung galaxy s6" """
    homepage = HomePage(browser)
    homepage.open()
    homepage.click_galaxy_s6()
    product_page = ProductPage(browser)
    product_page.check_title_is('Samsung galaxy s6')
 
+# region === OldVer (До POM структуры)
+
+# def test_open_s6(browser):
+#    browser.get('https://demoblaze.com/index.html')
+#    galaxy_s6 = browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
+#    galaxy_s6.click()
+#    title = browser.find_element(By.CSS_SELECTOR, 'h2')
+#    assert title.text == 'Samsung galaxy s6'
+
+# endregion
+
 def test_two_monitors(browser):
+   """Тестим что внутри товара "Samsung galaxy s6"
+       есть заголовок "Samsung galaxy s6" """
    homepage = HomePage(browser)
    homepage.open()
    homepage.click_monitor()
    time.sleep(5)
    homepage.check_that_products_count(2)
 
+# region === OldVer (До POM структуры)
+
+# def test_two_monitors(browser):
+#    browser.get('https://demoblaze.com/index.html')
+#    monitor_link = browser.find_element(By.CSS_SELECTOR, '''[onclick="byCat('monitor')"]''')
+#    monitor_link.click()
+#    time.sleep(5)
+#    monitors = browser.find_elements(By.CSS_SELECTOR, '.card')
+#    assert len(monitors) == 2
+
+# endregion
 
 # endregion
 
