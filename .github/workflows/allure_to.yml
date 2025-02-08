@@ -61,6 +61,7 @@
 #          name: allure-results
 #          path:
 #            allure-results
+#          overwrite: true
 #          retention-days: 1  # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
 #
 #
