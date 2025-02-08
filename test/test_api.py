@@ -1,8 +1,6 @@
-#====189 API===================== ГОТОВО
-# https://restful-api.dev/
-#====//189 API=====================
-import requests
-import pytest
+import requests # pip для работы с API / REST
+import pytest # для автоТестов
+import allure # ui для PyTest
 import time, os, dotenv, logging
 from loguru import logger as logger_loguru
 dotenv.load_dotenv()
@@ -66,98 +64,85 @@ logger_loguru.add(
 
 # endregion
 
-# region === ЛОГ / СПОСОБ 3 (через pip LOGURU) ====
 
-logger_loguru.add(
-   "logs/loguru.log", format='{time} {level} {message}',
-   level='ERROR', rotation='10 MB', compression='zip'
-)
-# *можно указать serialize=True и логфайл будет в формате .json
-
-# logger_loguru.info('Давай протестируем файл на данные?')
-
-#тест на ротацию
-# for _ in range(1000):
-#    logger_loguru.info("Hello, World (debug)!")
-
-#крутой ловец ошибок
-# @logger_loguru.catch
-# def main():
-#    1/0
-#
-# main()
-
-# endregion
 
 # region === 189 API ===
-# @logger_loguru.catch
-# @pytest.fixture()
-# def obj_id():
-#    payload = {
-#       "name": "Apple MacBook Pro 16",
-#       "data": {
-#          "year": os.getenv('POST_PARAM1'),
-#          "price": os.getenv('POST_PARAM2'),
-#          "CPU model": "Intel Core i9",
-#          "Hard disk size": "1 TB"
-#       }
-#    }
-#    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-#    yield responce['id']
-#    requests.delete(f'https://api.restful-api.dev/objects/{responce["id"]}')
-#
-# @logger_loguru.catch
-# def test_create_object():
-#    payload = {
-#       "name": "Apple MacBook Pro 16",
-#       "data": {
-#          "year": os.getenv('POST_PARAM1'),
-#          "price": os.getenv('POST_PARAM2'),
-#          "CPU model": "Intel Core i9",
-#          "Hard disk size": "1 TB"
-#       }
-#    }
-#    responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
-#    # print(f"responce: {responce}")
-#    assert responce['name'] == payload['name']
-#
-# @logger_loguru.catch
-# def test_get_object(obj_id):
-#    # print(obj_id) #ручной тест (что обьект (после yield) реал удаляеться)
-#    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
-#    # print(f"responce: {responce}")
-#    assert responce['id'] == obj_id
-#
-# @logger_loguru.catch
-# def test_update_object(obj_id):
-#    payload = {
-#          "name": "Apple MacBook Pro 16",
-#          "data": {
-#             "year": os.getenv('PUT_PARAM1'),
-#             "price": os.getenv('PUT_PARAM2'),
-#             "CPU model": "Intel Core i9",
-#             "Hard disk size": "1 TB"
-#          }
-#       }
-#    responce = requests.put(
-#       f'https://api.restful-api.dev/objects/{obj_id}',
-#       json=payload
-#    ).json()
-#    # print(f"responce: {responce}")
-#    assert responce['name'] == payload['name']
-#
-# @logger_loguru.catch
-# def test_delete_object(obj_id):
-#    responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
-#    # print(f"responce: {responce}")
-#    assert responce.status_code == 200
-#    responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
-#    assert responce.status_code == 404
+
+@logger_loguru.catch
+@pytest.fixture()
+def obj_id():
+   payload = {
+      "name": "Apple MacBook Pro 16",
+      "data": {
+         "year": os.getenv('POST_PARAM1'),
+         "price": os.getenv('POST_PARAM2'),
+         "CPU model": "Intel Core i9",
+         "Hard disk size": "1 TB"
+      }
+   }
+   responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
+   yield responce['id']
+   requests.delete(f'https://api.restful-api.dev/objects/{responce["id"]}')
+
+#===== САМИ ТЕСТЫ (GET / POST / PUT / DELETE): =========
+
+@allure.feature('189// PUT / Создание обьекта (по API)')
+@logger_loguru.catch
+def test_create_object():
+   payload = {
+      "name": "Apple MacBook Pro 16",
+      "data": {
+         "year": os.getenv('POST_PARAM1'),
+         "price": os.getenv('POST_PARAM2'),
+         "CPU model": "Intel Core i9",
+         "Hard disk size": "1 TB"
+      }
+   }
+   responce = requests.post('https://api.restful-api.dev/objects', json=payload).json()
+   # print(f"responce: {responce}")
+   assert responce['name'] == payload['name']
+
+@allure.feature('189// GET / Получение обьекта (по API)')
+@logger_loguru.catch
+def test_get_object(obj_id):
+   # print(obj_id) #ручной тест (что обьект (после yield) реал удаляеться)
+   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}').json()
+   # print(f"responce: {responce}")
+   assert responce['id'] == obj_id
+
+@allure.feature('189// PUT / Изменение обьекта (по API)')
+@logger_loguru.catch
+def test_update_object(obj_id):
+   payload = {
+         "name": "Apple MacBook Pro 16",
+         "data": {
+            "year": os.getenv('PUT_PARAM1'),
+            "price": os.getenv('PUT_PARAM2'),
+            "CPU model": "Intel Core i9",
+            "Hard disk size": "1 TB"
+         }
+      }
+   responce = requests.put(
+      f'https://api.restful-api.dev/objects/{obj_id}',
+      json=payload
+   ).json()
+   # print(f"responce: {responce}")
+   assert responce['name'] == payload['name']
+
+@allure.feature('189// DELETE / Удаление обьекта (по API)')
+@logger_loguru.catch
+def test_delete_object(obj_id):
+   responce = requests.delete(f'https://api.restful-api.dev/objects/{obj_id}')
+   # print(f"responce: {responce}")
+   assert responce.status_code == 200
+   responce = requests.get(f'https://api.restful-api.dev/objects/{obj_id}')
+   assert responce.status_code == 404
 
 # endregion
 # https://restful-api.dev/
 
-# region ====190/191 системные перем + dotenv / тестим сайт MAGENTO =====
+#region ====190/191 системные перем + dotenv / тестим сайт MAGENTO =====
+
 # from selenium import webdriver
 # from selenium.webdriver.common.by import By
 #
@@ -180,7 +165,7 @@ logger_loguru.add(
 #    driver.close()
 #    driver.quit()
 
-# endregion
+#endregion
 # https://magento.softwaretestingboard.com/
 
 # region === 192 ОСНОВНОЙ в GitActions / тестим сайт DemoBLAZE ======
@@ -209,15 +194,28 @@ logger_loguru.add(
 from pages.homepage import HomePage
 from pages.product import ProductPage
 
+# @allure.feature ('Simple button')
+# @allure.story('existence')
+# @allure.story('clickability')
+# with allure.step('Open Simple button page'):
+# with allure.step('Click the button'):
+# with allure.step('Check the result'):
+
+@allure.feature('191// Тест1 "Samsung galaxy s6"')
+@allure.story("""Тестим что внутри товара "Samsung galaxy s6"
+ есть заголовок "Samsung galaxy s6" """)
 def test_open_s6(browser):
    """Тестим что внутри товара "Samsung galaxy s6"
     есть заголовок "Samsung galaxy s6" """
-   homepage = HomePage(browser)
-   homepage.open()
-   homepage.click_galaxy_s6()
-   product_page = ProductPage(browser)
-   product_page.check_title_is('Samsung galaxy s6')
-   """лол2"""
+   with allure.step('Открыли Главную страницу'):
+      homepage = HomePage(browser)
+      homepage.open()
+   with allure.step('Кликнули по "Samsung galaxy s6"'):
+      homepage.click_galaxy_s6()
+   with allure.step('Открыли страницу товара'):
+      product_page = ProductPage(browser)
+   with allure.step('Убедились что там (действительно) "Samsung galaxy s6"'):
+      product_page.check_title_is('Samsung galaxy s6')
 
 # region === OldVer (До POM структуры)
 
@@ -230,14 +228,21 @@ def test_open_s6(browser):
 
 # endregion
 
+@allure.feature('191// Тест2 "2 Монитора" ')
+@allure.story("""Тестим что внутри категории "Monitors"
+       есть именно 2 товара/монитора """)
 def test_two_monitors(browser):
-   """Тестим что внутри товара "Samsung galaxy s6"
-       есть заголовок "Samsung galaxy s6" """
-   homepage = HomePage(browser)
-   homepage.open()
-   homepage.click_monitor()
-   time.sleep(5)
-   homepage.check_that_products_count(2)
+   """Тестим что внутри категории "Monitors"
+       есть именно 2 обьекта/монитора """
+   with allure.step('Открыли Главную страницу'):
+      homepage = HomePage(browser)
+      homepage.open()
+   with allure.step('Кликнули на категорию товаров "Monitors"'):
+      homepage.click_monitor()
+   with allure.step('*Выждали 5 секунд (чтоб браузер прогрузился полностью)'):
+      time.sleep(5)
+   with allure.step('Убедились что там именно 2 товара/монитора'):
+      homepage.check_that_products_count(2)
 
 # region === OldVer (До POM структуры)
 
@@ -256,10 +261,14 @@ def test_two_monitors(browser):
 # endregion
 # https://demoblaze.com/
 
-#====193 Создание POM проекта / тестим QA-PRACTICE.COM =======
+#====193 Создание POM проекта / тестим QA-PRACTICE.COM =======ГОТОВО
 # qa-practice.com
 
-#====194 ALLURE / тоже QA-PRACTICE.COM======
+#region ====194 ALLURE / тоже QA-PRACTICE.COM======ГОТОВО
+
+
+
+#endregion
 # qa-practice.com
 
 #====195 ALLURE в GitActions========
