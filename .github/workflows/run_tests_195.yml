@@ -107,16 +107,16 @@ jobs:
         if: "github.event.inputs.deployment_target == 'all'"
         run: pytest --alluredir=allure-results
         continue-on-error: true
-        # Сохраняем в файл (чтоб передать в allure)
+        # Сохраняем Рез / 'allure-results' в файл (чтоб передать в allure)
       - name: Store allure results
         uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path:
             allure-results
-          retention-days: 1 # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
+          retention-days: 1 # cleanup: удалим 'allure-results' через 1 день (чтоб не засорять/раздувать git)
 
-  # Сгенерируем отчёт в Allure (index.html)
+  # Сгенерируем отчёт / 'allure-report' в Allure (index.html)
   generate-report:
     # установим ОС / Java / Allure
     runs-on: ubuntu-latest
@@ -133,15 +133,15 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
       # Сгенерируем текущий/новый отчёт Allure
-      - run: allure generate -c allure-results -o _site
-      # сохраним визуал репорт (index.html)
+      - run: allure generate -c allure-results -o _site # *тут '_site' а не 'allure-report' ИБО git всё хранит в '_site'
+      # сохраним `allure-report` / визуал (index.html)
       - name: Store generated report
         uses: actions/upload-artifact@v3
         with:
           name: _site
           path:
             _site
-          retention-days: 1 # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
+          retention-days: 1 # cleanup: удалим `allure-report` через 1 день (чтоб не засорять/раздувать git)
 
   # Опубликуем/ЗаДиплоим Allure Отчёт (в GitPages)
   publish-report:
