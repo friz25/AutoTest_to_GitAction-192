@@ -183,9 +183,6 @@ logger_loguru.add(
 # endregion
 # https://magento.softwaretestingboard.com/
 
-from pages.homepage import HomePage
-from pages.product import ProductPage
-
 # region === 192 ОСНОВНОЙ в GitActions / тестим сайт DemoBLAZE ======
 
 # region Первая часть теста
@@ -208,6 +205,9 @@ from pages.product import ProductPage
 
 # endregion
 # region 2я часть теста
+
+from pages.homepage import HomePage
+from pages.product import ProductPage
 
 def test_open_s6(browser):
    """Тестим что внутри товара "Samsung galaxy s6"
