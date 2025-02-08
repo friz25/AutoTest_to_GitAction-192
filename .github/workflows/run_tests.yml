@@ -1,6 +1,5 @@
 name: Run autotests
 
-
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +10,11 @@ on:
         default: all
         options:
           - all
+  push:
+    branches: [main, master]
+  pull_request: 
+    branches: [main, master, test]
+    
 
 jobs:
   run-tests:
