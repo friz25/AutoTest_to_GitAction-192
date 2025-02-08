@@ -89,7 +89,7 @@ jobs:
         run: pip install -r requirements.txt
         # подгрузим предыдущие отчёты Allure
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         # Запустим Тест1
       - name: first_test
         if: "github.event.inputs.deployment_target == 'first_test'"
@@ -131,7 +131,7 @@ jobs:
       - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.23.1/allure-2.23.1.tgz && sudo tar -zxvf allure-2.23.1.tgz -C /opt/ && sudo ln -s /opt/allure-2.23.1/bin/allure /usr/bin/allure
       # подгрузим предыдущие отчёты Allure
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       # Сгенерируем текущий/новый отчёт Allure
       - run: allure generate -c allure-results -o _site # *тут '_site' а не 'allure-report' ИБО git всё хранит в '_site'
       # сохраним `allure-report` / визуал (index.html)
@@ -152,7 +152,7 @@ jobs:
     steps:
         # подгрузим предыдущие отчёты Allure
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
         # Диплоим (Allure отчёт) в GitHub Pages
