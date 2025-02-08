@@ -1,4 +1,4 @@
-name: run_tests_(Notify_to_Slack+Telegram).yml / Automated tests
+name: run_tests_(Notify_to_Slack+Telegram).yml
 
 on:
   # выбери какие оповещения будут приходить в Slack/Tg (зеленые/красные/все?)
@@ -100,4 +100,4 @@ jobs:
         if: needs.test.outputs.good == 'failure' || needs.test.outputs.bad == 'failure' || needs.test.outputs.all == 'failure'
         run: |
           curl --location 'https://hooks.slack.com/services/${{ secrets.st_slack }}' --header 'Content-Type: application/json' --data '{"text": ":rage: Testing finished. Report is here: https://friz25.github.io/AutoTest_to_GitAction-192/"}'
-          curl --location 'https://api.telegram.org/bot${{ secrets.TG }}/sendMessage' --header 'Content-Type: application/json' --data '{"chat_id": 431042724, "text": "Tests FAILED. Report: hhttps://friz25.github.io/AutoTest_to_GitAction-192/"}'
+          curl --location 'https://api.telegram.org/bot${{ secrets.TG }}/sendMessage' --header 'Content-Type: application/json' --data '{"chat_id": 431042724, "text": "Tests FAILED. Report: https://friz25.github.io/AutoTest_to_GitAction-192/"}'
