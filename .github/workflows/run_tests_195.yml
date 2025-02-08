@@ -13,6 +13,11 @@ on:
           - first_test
           - second_test
           - all
+  # автотест (самозапуститься если был Push/Pull с main ветки)
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master, test]
 
 permissions:
   contents: read
