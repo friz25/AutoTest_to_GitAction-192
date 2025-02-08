@@ -1,4 +1,4 @@
-name: run_tests_195.yml / Automated tests
+name: run_tests_(allure).yml / Automated tests
 
 on:
   # выбери какие именно тесты запускать (тест1, тест2 ИЛИ может все?)

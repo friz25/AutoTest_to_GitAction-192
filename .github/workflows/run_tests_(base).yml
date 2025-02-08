@@ -1,4 +1,4 @@
-#name: run_tests.yml / Run autotests
+#name: run_tests_(base).yml / Run autotests
 #
 #on:
 #  # выбери какие именно тесты запускать (тест1, тест2 ИЛИ может все?)

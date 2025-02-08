@@ -1,4 +1,4 @@
-name: Automated tests
+name: run_tests_(Notify_to_Slack+Telegram).yml / Automated tests
 
 on:
   # выбери какие оповещения будут приходить в Slack/Tg (зеленые/красные/все?)
