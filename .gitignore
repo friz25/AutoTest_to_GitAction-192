@@ -2,6 +2,7 @@
 venv
 .env
 
-
+### от Тестов
 __pycache__
 .pytest_cache
+allure-results

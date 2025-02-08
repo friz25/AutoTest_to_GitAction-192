@@ -1,8 +1,7 @@
 import requests # pip для работы с API / REST
 import pytest # для автоТестов
 import allure # ui для PyTest
-import time, os, dotenv, logging
-from loguru import logger as logger_loguru
+import time, os, dotenv
 dotenv.load_dotenv()
 
 # region === ЛОГ / СПОСОБ 1 ===
