@@ -1,6 +1,7 @@
 name: run_tests_195.yml / Automated tests
 
 on:
+  # выбери какие именно тесты запускать (тест1, тест2 ИЛИ может все?)
   workflow_dispatch:
     inputs:
       deployment_target:
@@ -92,12 +93,14 @@ jobs:
         # Запустим Тест1
       - name: first_test
         if: "github.event.inputs.deployment_target == 'first_test'"
-        run: pytest tests/test_button.py::test_button_exist --alluredir=allure-results
+#        run: pytest tests/test_button.py::test_button_exist --alluredir=allure-results
+        run: pytest tests/test_api.py::test_open_s6 --alluredir=allure-results
         continue-on-error: true
         # Запустим Тест2
       - name: second_test
         if: "github.event.inputs.deployment_target == 'second_test'"
-        run: pytest tests/test_button.py::test_button_exist_2 --alluredir=allure-results
+#        run: pytest tests/test_button.py::test_button_exist_2 --alluredir=allure-results
+        run: pytest tests/test_api.py::test_two_monitors --alluredir=allure-results
         continue-on-error: true
         # Запустим Все Тесты
       - name: all
@@ -113,6 +116,7 @@ jobs:
             allure-results
           retention-days: 1 # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
 
+  # Сгенерируем отчёт в Allure (index.html)
   generate-report:
     # установим ОС / Java / Allure
     runs-on: ubuntu-latest
@@ -139,6 +143,7 @@ jobs:
             _site
           retention-days: 1 # cleanup: удалим отчёт через 1 день (чтоб не засорять/раздувать git)
 
+  # Опубликуем/ЗаДиплоим Allure Отчёт (в GitPages)
   publish-report:
     # показать визуал репорт (index.html)
     runs-on: ubuntu-latest
