@@ -1,0 +1,103 @@
+name: Automated tests
+
+on:
+  # выбери какие оповещения будут приходить в Slack/Tg (зеленые/красные/все?)
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: Choose target
+        required: true
+        default: good
+        type: choice
+        options:
+          - good
+          - bad
+          - all
+#  # автотест (самозапуститься если был Push/Pull с main ветки)
+#  push:
+#    branches: [main, master]
+#  pull_request:
+#    branches: [main, master, test]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    # установим ОС / Python 3.10 /
+    runs-on: ubuntu-latest
+    outputs:
+      good: ${{ steps.good.outcome }}
+      bad: ${{ steps.bad.outcome }}
+      all: ${{ steps.all.outcome }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      # установим зависимости / пакеты (из списка requirements.txt)
+      - name: install dependencies
+        run: pip install -r requirements.txt
+      # проверка: показать тест если он зеленый?
+      - name: good
+        id: good
+        if: "github.event.inputs.deployment_target == 'good'"
+        run: pytest -m good --alluredir=allure-results
+        continue-on-error: true
+      # проверка: показать тест если он красный?
+      - name: bad
+        id: bad
+        if: "github.event.inputs.deployment_target == 'bad'"
+        run: pytest -m bad --alluredir=allure-results
+        continue-on-error: true
+      # # проверка: показать любой тест (зеленый/красный)?
+      - name: all
+        id: all
+        if: "github.event.inputs.deployment_target == 'all'"
+        run: pytest --alluredir=allure-results
+        continue-on-error: true
+      # установим Java
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft' # See 'Supported distributions' for available options
+          java-version: '17'
+      - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.23.1/allure-2.23.1.tgz && sudo tar -zxvf allure-2.23.1.tgz -C /opt/ && sudo ln -s /opt/allure-2.23.1/bin/allure /usr/bin/allure
+      - run: allure generate -c allure-results -o _site
+      - name: Store generated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: _site
+          path:
+            _site
+          retention-days: 1
+
+  # Опубликуем/ЗаДиплоим визуал репорт (index.html) / Allure Отчёт (в GitPages)
+  publish-report:
+    # установим ОС
+    runs-on: ubuntu-latest
+    needs: test
+    name: Report publication
+    steps:
+        # подгрузим предыдущие отчёты Allure
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        # Диплоим (Allure отчёт) в GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: success
+        if: needs.test.outputs.good != 'failure' && needs.test.outputs.bad != 'failure' && needs.test.outputs.all != 'failure'
+        run: |
+          curl --location 'https://hooks.slack.com/services/${{ secrets.st_slack }}' --header 'Content-Type: application/json' --data '{"text": ":white_check_mark: Testing finished. Report is here: https://friz25.github.io/AutoTest_to_GitAction-192/"}'
+          curl --location 'https://api.telegram.org/bot${{ secrets.TG }}/sendMessage' --header 'Content-Type: application/json' --data '{"chat_id": 431042724, "text": "Tests pasted - SUCCES. Report: https://friz25.github.io/AutoTest_to_GitAction-192/"}'
+      - name: failure
+        if: needs.test.outputs.good == 'failure' || needs.test.outputs.bad == 'failure' || needs.test.outputs.all == 'failure'
+        run: |
+          curl --location 'https://hooks.slack.com/services/${{ secrets.st_slack }}' --header 'Content-Type: application/json' --data '{"text": ":rage: Testing finished. Report is here: https://friz25.github.io/AutoTest_to_GitAction-192/"}'
+          curl --location 'https://api.telegram.org/bot${{ secrets.TG }}/sendMessage' --header 'Content-Type: application/json' --data '{"chat_id": 431042724, "text": "Tests FAILED. Report: hhttps://friz25.github.io/AutoTest_to_GitAction-192/"}'
