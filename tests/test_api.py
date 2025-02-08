@@ -235,6 +235,7 @@ def test_two_monitors(browser):
    with allure.step('*Выждали 5 секунд (чтоб браузер прогрузился полностью)'):
       time.sleep(5)
    homepage.check_that_products_count(2)
+   assert 1 == 2
 
 # region === OldVer (До POM структуры)
 
