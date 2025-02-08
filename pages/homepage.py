@@ -11,7 +11,7 @@ class HomePage:
             self.browser.get('https://demoblaze.com/index.html')
 
     def click_galaxy_s6(self):
-        with allure.step('Кликнули по "Samsung galaxy s6"'):
+        with allure.step('Кликнули на товар "Samsung galaxy s6"'):
             galaxy_s6 = self.browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
             galaxy_s6.click()
 
