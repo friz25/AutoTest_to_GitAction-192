@@ -1,5 +1,5 @@
 
-name: Allure to server
+name: server.yml / Allure to server
 
 on:
   workflow_dispatch:

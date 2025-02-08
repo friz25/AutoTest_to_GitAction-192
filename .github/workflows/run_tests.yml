@@ -1,4 +1,4 @@
-name: Run autotests
+name: run_tests.yml / Run autotests
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Automated tests
+name: allure_to.yml / Automated tests
 
 on:
   push:
