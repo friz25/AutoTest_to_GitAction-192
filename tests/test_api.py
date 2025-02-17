@@ -189,9 +189,9 @@ def test_delete_object(obj_id):
 
 # endregion
 # region 2я часть теста
-
-from pages.homepage import HomePage
-from pages.product import ProductPage
+#
+# from pages.homepage import HomePage
+# from pages.product import ProductPage
 
 # @allure.feature ('Simple button')
 # @allure.story('existence')
@@ -200,42 +200,42 @@ from pages.product import ProductPage
 # with allure.step('Click the button'):
 # with allure.step('Check the result'):
 
-@allure.feature('191// Тест1 "Samsung galaxy s6"')
-@allure.story("""Тестим что внутри товара "Samsung galaxy s6"
- есть заголовок "Samsung galaxy s6" """)
-def test_open_s6(browser):
-   """Тестим что внутри товара "Samsung galaxy s6"
-    есть заголовок "Samsung galaxy s6" """
-   homepage = HomePage(browser)
-   homepage.open()
-   homepage.click_galaxy_s6()
-   product_page = ProductPage(browser)
-   product_page.check_title_is('Samsung galaxy s6')
-
-# region === OldVer (До POM структуры)
-
+# @allure.feature('191// Тест1 "Samsung galaxy s6"')
+# @allure.story("""Тестим что внутри товара "Samsung galaxy s6"
+#  есть заголовок "Samsung galaxy s6" """)
 # def test_open_s6(browser):
-#    browser.get('https://demoblaze.com/index.html')
-#    galaxy_s6 = browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
-#    galaxy_s6.click()
-#    title = browser.find_element(By.CSS_SELECTOR, 'h2')
-#    assert title.text == 'Samsung galaxy s6'
-
-# endregion
-
-@allure.feature('191// Тест2 "2 Монитора" ')
-@allure.story("""Тестим что внутри категории "Monitors"
-       есть именно 2 товара/монитора """)
-def test_two_monitors(browser):
-   """Тестим что внутри категории "Monitors"
-       есть именно 2 обьекта/монитора """
-   homepage = HomePage(browser)
-   homepage.open()
-   homepage.click_monitor()
-   with allure.step('*Выждали 5 секунд (чтоб браузер прогрузился полностью)'):
-      time.sleep(5)
-   homepage.check_that_products_count(2)
-   # assert 1 == 2
+#    """Тестим что внутри товара "Samsung galaxy s6"
+#     есть заголовок "Samsung galaxy s6" """
+#    homepage = HomePage(browser)
+#    homepage.open()
+#    homepage.click_galaxy_s6()
+#    product_page = ProductPage(browser)
+#    product_page.check_title_is('Samsung galaxy s6')
+#
+# # region === OldVer (До POM структуры)
+#
+# # def test_open_s6(browser):
+# #    browser.get('https://demoblaze.com/index.html')
+# #    galaxy_s6 = browser.find_element(By.XPATH, '//a[text()="Samsung galaxy s6"]')
+# #    galaxy_s6.click()
+# #    title = browser.find_element(By.CSS_SELECTOR, 'h2')
+# #    assert title.text == 'Samsung galaxy s6'
+#
+# # endregion
+#
+# @allure.feature('191// Тест2 "2 Монитора" ')
+# @allure.story("""Тестим что внутри категории "Monitors"
+#        есть именно 2 товара/монитора """)
+# def test_two_monitors(browser):
+#    """Тестим что внутри категории "Monitors"
+#        есть именно 2 обьекта/монитора """
+#    homepage = HomePage(browser)
+#    homepage.open()
+#    homepage.click_monitor()
+#    with allure.step('*Выждали 5 секунд (чтоб браузер прогрузился полностью)'):
+#       time.sleep(5)
+#    homepage.check_that_products_count(2)
+#    # assert 1 == 2
 
 # region === OldVer (До POM структуры)
 
