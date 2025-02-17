@@ -23,3 +23,4 @@ CMD ["runserver", "0.0.0.0:8000"]
 
 # Запуск :
 #docker run --rm -it -p 8000:8000 dj_docker
+#Проверьте http://localhost:8000/
