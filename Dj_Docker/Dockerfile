@@ -20,5 +20,6 @@ CMD ["runserver", "0.0.0.0:8000"]
 
 # чтоб Создать Образ / В терминале venv :
 #docker build -t dj_docker .
+
 # Запуск :
 #docker run --rm -it -p 8000:8000 dj_docker
