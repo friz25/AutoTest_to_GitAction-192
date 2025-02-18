@@ -1,0 +1,18 @@
+#version: '2.3'
+
+networks:
+  main:
+services:
+  nginx:
+    image: nginx:1.27.4-alpine3.21
+    container_name: 'nginx_dj_training'
+    restart: on-failure
+    ports:
+      - "80:80"
+    volumes:
+#      - /Users/mihailkiselev/Projects/Bookstore_Full/nginx/html:/usr/share/nginx/html
+#      - /Users/mihailkiselev/Projects/Bookstore_Full/nginx/.nginx:/etc/nginx
+      - C:\Django\222\AutoTest_to_GitAction\AutoTest_to_GitAction-192\Dj_Docker\_volume\nginx\html:/usr/share/nginx/html
+      - C:\Django\222\AutoTest_to_GitAction\AutoTest_to_GitAction-192\Dj_Docker\_volume\nginx\.nginx:/etc/nginx
+    networks:
+      - main

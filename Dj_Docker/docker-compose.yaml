@@ -1,26 +1,360 @@
-version: '3.5'
-
+#version: '3.5'
+networks:
+  main:
 services:
-  db:
-    image: postgres:14.16-alpine3.20
-    container_name: db_postgres
+  loggerDB:
+    image: mongo:8.0.5-rc2-noble
+    container_name: 'loggerDB_dj_training'
     ports:
-      - "5432:5432"
+      - ${LOG_DB_PORTS}
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
+      - MONGO_INITDB_ROOT_USERNAME=${LOG_DB_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${LOG_DB_ROOT_PASS}
     volumes:
-      - .:/code
-    ports:
-      - "8000:8000"
+      - ./_volume/mongo/logger/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    networks:
+      - main
+
+
+  rabbitmq:
+    image: rabbitmq:4.1-rc-management-alpine
+    container_name: 'rabbitmq_dj_training'
+#    ports:
+#      - ${RABBIT_PORT1}
+#      - ${RABBIT_PORT2}
     environment:
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
+      - RABBITMQ_DEFAULT_USER=${RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD}
+#    volumes:
+#      - ./_volume/rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+    networks:
+      - main
+
+  redis:
+    image: redis:8.0-M03-alpine3.21
+    container_name: 'redis_dj_training'
+    hostname: 'redis'
+    ports:
+      - ${REDIS_PORTS}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_REPLICATION_MODE=master
+    volumes:
+      - ./_volume/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server --requirepass ${REDIS_PASSWORD} --include /usr/local/etc/redis/redis.conf
+    networks:
+      - main
+
+  adminer:
+    image: adminer:4.8.1-standalone
+    container_name: 'adminer_dj_training'
+    ports:
+      - ${ADMINER_PORTS}
+    volumes:
+      - ./_volume/adminer/index.php:/srv/index.php
+    networks:
+      - main
+
+  postgres:
+    image: postgres:14.16-alpine3.20
+    restart: on-failure
+    command: -c fsync=off -c full_page_writes=off
+    container_name: 'db_postgres'
+    ports:
+      - ${POSTGRES_PORTS}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: ${PGDATA}
+      POSTGRES_INITDB_ARGS: "-A md5"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
+    networks:
+      - main
+
+  nginx:
+    image: nginx:1.27.4-alpine3.21
+    container_name: 'nginx_dj_training'
+    restart: on-failure
+    ports:
+      - ${NGINX_PORTS}
+    volumes:
+#      - /Users/mihailkiselev/Projects/Bookstore_Full/nginx/html:/usr/share/nginx/html
+#      - /Users/mihailkiselev/Projects/Bookstore_Full/nginx/.nginx:/etc/nginx
+      - C:\Django\222\AutoTest_to_GitAction\AutoTest_to_GitAction-192\Dj_Docker\_volume\nginx\html:/usr/share/nginx/html
+      - C:\Django\222\AutoTest_to_GitAction\AutoTest_to_GitAction-192\Dj_Docker\_volume\nginx\.nginx:/etc/nginx
+    networks:
+      - main
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.8.1-2-ubi8
+    container_name: 'zookeeper_dj_training'
+    restart: on-failure
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+    networks:
+      - main
+
+  kafka:
+    image: confluentinc/cp-kafka:7.8.1-2-ubi8
+    depends_on: [ zookeeper ]
+    container_name: 'kafka_dj_training'
+    restart: on-failure
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      KAFKA_JMX_PORT: ${KAFKA_JMX_PORT}
+    ports:
+      - ${KAFKA_PORTS}
+    networks:
+      - main
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: 'kafka-ui_dj_training'
+    environment:
+      DYNAMIC_CONFIG_ENABLED: ${KAFKA_UI_DYNAMIC_CONFIG_ENABLED}
+    ports:
+      - ${KAFKA_UI_PORTS}
+    networks:
+      - main
+
+  # Django Backend
+  api:
+    # можно вот так (прям с DockerHub):
+#    image: kismichel/bookstore:api_1
+#    restart: on-failure
+#    build: ./BookStore_API
+    build: . # или так (если DockerFile лежит тут же)
+    command: python manage.py runserver 0.0.0.0:8000
+#    volumes:
+#      - ./:./
+    ports:
+      - ${DJANGO_PORTS}
+    environment:
+      POSTGRES_NAME: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
-      - db
+      postgres:
+        condition: service_healthy
+
+  # REACT Frontend
+  ui:
+    image: kismichel/bookstore:ui_1
+    restart: on_failure
+    build: ./ReactBookStore
+    ports:
+      - "80:80"
+
+#===с 2го видео====================
+#  redis:
+#    container_name: "redis"
+#    image: redis:8.0-M03-alpine3.21
+#    # исп наш redis.conf (вместо default) + укажем пароль
+#    command: redis-server /usr/local/etc/redis/redis.conf --requirepass mypass
+#    ports:
+#     - "6379:6379"
+#    # сделал bind с локальным .conf файлом (чтоб через него указ конфиг)
+#    volumes:
+#     - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+#===/с 2го видео====================
+
+
+#  # PostgreSQL
+#  postgres:
+#    image: postgres:14.16-alpine3.20
+#    container_name: db_postgres
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_DB: postgres
+#      POSTGRES_USER: admin
+#      POSTGRES_PASSWORD: admin
+#      PGDATA: C:\PostgreSQL\data
+#      POSTGRES_INITDB_ARGS: "-A md5"
+#  # Django
+#  web:
+#    build: .
+#    command: python manage.py runserver 0.0.0.0:8000
+##    volumes:
+##      - ./:./
+#    ports:
+#      - "8000:8000"
+#    environment:
+#      - POSTGRES_NAME=postgres
+#      - POSTGRES_USER=admin
+#      - POSTGRES_PASSWORD=admin
+#    depends_on:
+#      - postgres
+
+
+
+
+
+
+
+
+
+
+
+#=====ОФФ документация Postgres===============
+# Use postgres/example user/password credentials
+#version: '3.9'
+#
+#services:
+#
+#  db:
+#    image: postgres
+#    restart: always
+#    # set shared memory limit when using docker-compose
+#    shm_size: 128mb
+#    # or set shared memory limit when deploy via swarm stack
+#    #volumes:
+#    #  - type: tmpfs
+#    #    target: /dev/shm
+#    #    tmpfs:
+#    #      size: 134217728 # 128*2^20 bytes = 128Mb
+#    environment:
+#      POSTGRES_PASSWORD: example
+#
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 8080:8080
+
+#=======ОФФ документация Adminer===============
+# Use root/example as user/password credentials
+#version: '3.1'
+#
+#services:
+#
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 8080:8080
+#
+#  db:
+#    image: mysql:5.6
+#    restart: always
+#    environment:
+#      MYSQL_ROOT_PASSWORD: example
+
+#========ОФФ документация MongoDB =================
+# Use root/example as user/password credentials
+#version: '3.1'
+#
+#services:
+#
+#  mongo:
+#    image: mongo
+#    restart: always
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+#
+#  mongo-express:
+#    image: mongo-express
+#    restart: always
+#    ports:
+#      - 8081:8081
+#    environment:
+#      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+#      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+#      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+#      ME_CONFIG_BASICAUTH: false
+
+#========DockerCompose Логгера / NodeJs проект=========
+#networks:
+#  main:
+#services:
+#  logger:
+#  container_name: 'logger_dj_training'
+#  build:
+#    context: ./ #если DockerFile лежит тут же
+#    args: # передаём секр перем в DockerFile
+#      - ENV=${ENV}
+#      - SERVICE_NAME=${LOG_SERVICE_NAME}
+#      - PM2_SECRET_KEY=${PM2_SECRET_KEY}
+#      - PM2_PUBLIC_KEY=${PM2_PUBLIC_KEY}
+#    volumes: #тут путь к микросервису (к отдел папке app)
+#      - ./${LOG_SERVICE_NAME}:/usr/src/${LOG_SERVICE_NAME}
+#    ports:
+#      - ${LOG_PORT}:${LOG_PORT}
+#    environment:
+#      - ENV=${ENV}
+#      - SERVICE_NAME=${LOG_SERVICE_NAME}
+#      - COMMON_PATH=${COMMON_PATH}
+#      - PORT=${LOG_PORT}
+#      - HOST=${HOST}
+#      - MONGO_URL=${LOG_DB_URL}
+#      - SECRET=${SECRET}
+#      - RABBIT_URL=${RABBIT_URL}
+#    networks:
+#      -main
+
+#===========ОФФ документация Zookeeper=============
+#version: '3.1'
+#
+#services:
+#  zoo1:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo1
+#    ports:
+#      - 2181:2181
+#    environment:
+#      ZOO_MY_ID: 1
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+#
+#  zoo2:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo2
+#    ports:
+#      - 2182:2181
+#    environment:
+#      ZOO_MY_ID: 2
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+#
+#  zoo3:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo3
+#    ports:
+#      - 2183:2181
+#    environment:
+#      ZOO_MY_ID: 3
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+#========ОФФ документация Bitnami/Kafka =================
+#version: '2'
+#
+#networks:
+#  app-tier:
+#    driver: bridge
+#
+#services:
+#  kafka:
+#    image: 'bitnami/kafka:latest'
+#    networks:
+#      - app-tier
+#    environment:
+#      - KAFKA_CFG_NODE_ID=0
+#      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+#  myapp:
+#    image: 'YOUR_APPLICATION_IMAGE'
+#    networks:
+#      - app-tier

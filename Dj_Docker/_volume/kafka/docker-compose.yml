@@ -1,0 +1,99 @@
+# Билдиться 2 мин
+#version: '3.8'
+
+networks:
+  main:
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.8.1-2-ubi8
+    container_name: 'zookeeper_dj_training'
+    restart: on-failure
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - main
+
+  kafka:
+    image: confluentinc/cp-kafka:7.8.1-2-ubi8
+    depends_on: [ zookeeper ]
+    container_name: 'kafka_dj_training'
+    restart: on-failure
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9991
+    ports:
+      - "9092:9092"
+    networks:
+      - main
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: 'kafka-ui_dj_training'
+    environment:
+      DYNAMIC_CONFIG_ENABLED: true
+    ports:
+      - "8080:8080"
+    networks:
+      - main
+
+
+#===========ОФФ документация Zookeeper=============
+#version: '3.1'
+#
+#services:
+#  zoo1:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo1
+#    ports:
+#      - 2181:2181
+#    environment:
+#      ZOO_MY_ID: 1
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+#
+#  zoo2:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo2
+#    ports:
+#      - 2182:2181
+#    environment:
+#      ZOO_MY_ID: 2
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+#
+#  zoo3:
+#    image: zookeeper
+#    restart: always
+#    hostname: zoo3
+#    ports:
+#      - 2183:2181
+#    environment:
+#      ZOO_MY_ID: 3
+#      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+#========ОФФ документация Bitnami/Kafka =================
+#version: '2'
+#
+#networks:
+#  app-tier:
+#    driver: bridge
+#
+#services:
+#  kafka:
+#    image: 'bitnami/kafka:latest'
+#    networks:
+#      - app-tier
+#    environment:
+#      - KAFKA_CFG_NODE_ID=0
+#      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+#  myapp:
+#    image: 'YOUR_APPLICATION_IMAGE'
+#    networks:
+#      - app-tier

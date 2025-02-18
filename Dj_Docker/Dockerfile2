@@ -1,0 +1,27 @@
+# 2 ДокерФайла
+# 1й: Backend на фреймворке Spring / Java
+FROM maven:3.8.5-openjdk-17 AS builder
+COPY pom.xml /tmp/
+COPY src /tmp/src
+WORKDIR /tmp
+RUN mvn clean package -Dmaven.test.skip
+
+FROM openjdk:17-jdk-slim
+COPY --from=builder /tmp/target/BookStore-0.0.1-SNAPSHOT.jar /tmp/app.jar
+WORKDIR /tmp
+EXPOSE 8080
+ENTRYPOINT ["java", "-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=n", "-jar", "app.jar"]
+
+# 2й: Frontend на фреймворке React / JavaScript
+FROM node:18 as build
+WORKDIR /app
+COPY package.json /app/package.json
+RUN npm install --legacy-peer-deps
+COPY . /app
+RUN npm run build
+
+FROM nginx:1.23.1-alpine
+COPY ./.nginx/nginx.conf /etc/nginx/nginx.conf
+RUN rm -rf /usr/share/nginx/html/*
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
