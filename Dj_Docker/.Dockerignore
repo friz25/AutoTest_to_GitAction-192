@@ -1,2 +1,12 @@
+# по умолчанию
+.idea
+target
+.gitignore
+Dockerfile
+*.md
+mvnw.*
+**/*.pdf
+
+# конкр для этого проекта еще
 Dockerfile2
 Dockerfile3

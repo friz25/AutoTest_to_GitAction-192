@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert --out k8s/
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  containers:
+    - image: nginx:1.27.4-alpine3.21
+      name: nginx-dj-training
+      ports:
+        - containerPort: 80
+          protocol: TCP
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: nginx-cm0
+        - mountPath: /etc/nginx
+          name: nginx-cm1
+  restartPolicy: OnFailure
+  volumes:
+    - configMap:
+        name: nginx-cm0
+      name: nginx-cm0
+    - configMap:
+        name: nginx-cm1
+      name: nginx-cm1
